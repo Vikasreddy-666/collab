@@ -1,208 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>eSports Player Dashboard</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0; padding: 0;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>2 Player Tank Battle</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0; padding: 0;
+    background: #111;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    user-select: none;
+    overflow: hidden;
+  }
+  h1 {
+    margin: 20px 0 10px;
+  }
+  #gameArea {
+    position: relative;
+    width: 900px;
+    height: 500px;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border: 3px solid #555;
+    border-radius: 12px;
+    overflow: hidden;
+  }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      color: #fff;
-      background: linear-gradient(270deg, #0f0f0f, #1a1a1a);
-      overflow-x: hidden;
-      min-height: 100vh;
-      position: relative;
-    }
+  /* Health bars container */
+  .health-bars {
+    width: 900px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .health-container {
+    width: 45%;
+  }
+  .health-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: center;
+  }
+  .health-bar {
+    background: #444;
+    border-radius: 20px;
+    height: 25px;
+    overflow: hidden;
+  }
+  .health-bar-inner {
+    height: 100%;
+    background: #27ae60;
+    width: 100%;
+    transition: width 0.3s ease, background 0.3s ease;
+  }
 
-    h1 {
-      text-align: center;
-      padding: 30px 20px;
-      font-size: 2.5rem;
-      background: linear-gradient(to right, #00f0ff, #00ff88);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+  /* Tanks */
+  .tank {
+    position: absolute;
+    width: 60px;
+    height: 40px;
+    background: linear-gradient(45deg, #2980b9, #3498db);
+    border-radius: 12px;
+    box-shadow: 0 0 10px #2980b9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tank.right {
+    background: linear-gradient(45deg, #c0392b, #e74c3c);
+    box-shadow: 0 0 10px #c0392b;
+  }
+  .tank-body {
+    width: 40px;
+    height: 40px;
+    background: inherit;
+    border-radius: 50% 50% 20% 20%;
+    position: relative;
+  }
+  .turret {
+    position: absolute;
+    width: 12px;
+    height: 30px;
+    background: #111;
+    top: 5px;
+    left: 50%;
+    transform-origin: bottom center;
+    border-radius: 6px;
+    transform: translateX(-50%) rotate(0deg);
+  }
 
-    .background-animation {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
-    }
+  /* Bullet */
+  .bullet {
+    position: absolute;
+    width: 10px;
+    height: 6px;
+    background: yellow;
+    border-radius: 3px;
+    box-shadow: 0 0 8px 2px yellow;
+  }
 
-    .bubble {
-      position: absolute;
-      bottom: -100px;
-      width: 40px;
-      height: 40px;
-      background: rgba(0, 255, 255, 0.15);
-      border-radius: 50%;
-      animation: floatUp 20s linear infinite;
-    }
-
-    @keyframes floatUp {
-      0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(-120vh) scale(0.5);
-        opacity: 0;
-      }
-    }
-
-    .dashboard {
-      max-width: 1200px;
-      margin: auto;
-      padding: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    .player-card {
-      background: #1e1e1e;
-      border-radius: 12px;
-      padding: 20px;
-      width: 280px;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-      transition: transform 0.3s ease;
-    }
-
-    .player-card:hover {
-      transform: scale(1.03);
-    }
-
-    .player-name {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-      color: #00e0ff;
-    }
-
-    .player-info {
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    .label {
-      color: #ccc;
-      font-weight: 600;
-    }
-
-    @media (max-width: 600px) {
-      .player-card {
-        width: 90%;
-      }
-    }
-  </style>
+  #message {
+    margin-top: 15px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f39c12;
+    min-height: 1.5em;
+  }
+</style>
 </head>
 <body>
 
-  <div class="background-animation" id="background">
-    <!-- Bubbles will be generated here -->
+<h1>2 Player Tank Battle</h1>
+
+<div class="health-bars">
+  <div class="health-container">
+    <div class="health-label">Left Player Health</div>
+    <div class="health-bar">
+      <div id="leftHealth" class="health-bar-inner" style="width: 100%;"></div>
+    </div>
   </div>
-
-  <h1>eSports Player Dashboard</h1>
-
-  <div class="dashboard" id="dashboard">
-    <!-- Player cards will be injected here -->
+  <div class="health-container">
+    <div class="health-label">Right Player Health</div>
+    <div class="health-bar">
+      <div id="rightHealth" class="health-bar-inner" style="width: 100%;"></div>
+    </div>
   </div>
+</div>
 
-  <script>
-    // Sample player data
-    const players = [
-      {
-        name: "ShadowReaper",
-        game: "Valorant",
-        rank: "Radiant",
-        team: "PhantomX",
-        stats: {
-          KDA: "2.1",
-          matches: 134,
-          winRate: "76%"
-        }
-      },
-      {
-        name: "AceKing",
-        game: "CS:GO",
-        rank: "Global Elite",
-        team: "NovaStrike",
-        stats: {
-          KDA: "1.8",
-          matches: 201,
-          winRate: "69%"
-        }
-      },
-      {
-        name: "Zer0",
-        game: "League of Legends",
-        rank: "Challenger",
-        team: "DragonClaw",
-        stats: {
-          KDA: "3.4",
-          matches: 322,
-          winRate: "82%"
-        }
-      },
-      {
-        name: "BlitzFury",
-        game: "Overwatch 2",
-        rank: "Top 500",
-        team: "SkyStorm",
-        stats: {
-          KDA: "1.9",
-          matches: 178,
-          winRate: "74%"
-        }
-      }
-    ];
+<div id="gameArea">
+  <div id="leftTank" class="tank" style="top: 220px; left: 50px;">
+    <div class="tank-body">
+      <div class="turret" id="leftTurret"></div>
+    </div>
+  </div>
+  <div id="rightTank" class="tank right" style="top: 220px; left: 790px;">
+    <div class="tank-body">
+      <div class="turret" id="rightTurret"></div>
+    </div>
+  </div>
+</div>
 
-    // Render player cards
-    const dashboard = document.getElementById("dashboard");
+<div id="message"></div>
 
-    players.forEach(player => {
-      const card = document.createElement("div");
-      card.className = "player-card";
+<script>
+  const gameArea = document.getElementById('gameArea');
+  const leftTank = document.getElementById('leftTank');
+  const rightTank = document.getElementById('rightTank');
+  const leftHealthBar = document.getElementById('leftHealth');
+  const rightHealthBar = document.getElementById('rightHealth');
+  const message = document.getElementById('message');
 
-      card.innerHTML = `
-        <div class="player-name">${player.name}</div>
-        <div class="player-info">
-          <div><span class="label">Game:</span> ${player.game}</div>
-          <div><span class="label">Rank:</span> ${player.rank}</div>
-          <div><span class="label">Team:</span> ${player.team}</div>
-          <div><span class="label">KDA:</span> ${player.stats.KDA}</div>
-          <div><span class="label">Matches:</span> ${player.stats.matches}</div>
-          <div><span class="label">Win Rate:</span> ${player.stats.winRate}</div>
-        </div>
-      `;
-      dashboard.appendChild(card);
-    });
+  const gameWidth = gameArea.clientWidth;
+  const gameHeight = gameArea.clientHeight;
 
-    // Create floating bubbles for background animation
-    const background = document.getElementById('background');
+  // Tank states
+  let leftHealth = 100;
+  let rightHealth = 100;
 
-    function createBubble() {
-      const bubble = document.createElement('div');
-      bubble.classList.add('bubble');
-      bubble.style.left = Math.random() * 100 + 'vw';
-      bubble.style.width = bubble.style.height = (Math.random() * 30 + 10) + 'px';
-      bubble.style.animationDuration = (Math.random() * 15 + 10) + 's';
-      background.appendChild(bubble);
+  // Tank movement parameters
+  const tankSpeed = 4;
+  const bulletSpeed = 8;
 
-      setTimeout(() => bubble.remove(), 20000);
+  // Store currently pressed keys
+  const keysPressed = {};
+
+  // Tank size
+  const tankWidth = 60;
+  const tankHeight = 40;
+
+  // Bullet class
+  class Bullet {
+    constructor(x, y, direction, owner) {
+      this.x = x;
+      this.y = y;
+      this.width = 10;
+      this.height = 6;
+      this.speed = bulletSpeed;
+      this.direction = direction; // angle in degrees
+      this.owner = owner; // 'left' or 'right'
+
+      this.el = document.createElement('div');
+      this.el.classList.add('bullet');
+      this.el.style.left = `${this.x}px`;
+      this.el.style.top = `${this.y}px`;
+      this.el.style.transform = `rotate(${this.direction}deg)`;
+      gameArea.appendChild(this.el);
+      this.active = true;
     }
 
-    // Generate bubbles continuously
-    setInterval(createBubble, 500);
-  </script>
+    update() {
+      const rad = this.direction * Math.PI / 180;
+      this.x += Math.cos(rad) * this.speed;
+      this.y += Math.sin(rad) * this.speed;
+      this.el.style.left = this.x + 'px';
+      this.el.style.top = this.y + 'px';
+
+      // Remove bullet if out of bounds
+      if (this.x < -20 || this.x > gameWidth + 20 || this.y < -20 || this.y > gameHeight + 20) {
+        this.destroy();
+      }
+    }
+
+    destroy() {
+      this.active = false;
+      this.el.remove();
+    }
+
+    getRect() {
+      return {
+        left: this.x,
+        top: this.y,
+        right: this.x + this.width,
+        bottom: this.y + this.height
+      };
+    }
+  }
+
+  // Tanks positions and turret angles
+  const tanks = {
+    left: {
+      el: leftTank,
+      turretEl: document.getElementById('leftTurret'),
+      x: 50,
+      y: 220,
+      width: tankWidth,
+      height: tankHeight,
+      health: leftHealth,
+      turretAngle: 0
+    },
+    right: {
+      el: rightTank,
+      turretEl: document.getElementById('rightTurret'),
+      x: 790,
+      y: 220,
+      width: tankWidth,
+      height: tankHeight,
+      health: rightHealth,
+      turretAngle: 180
+    }
+  };
+
+  // Active bullets array
+  let bullets = [];
+
+  // Movement controls mapping
+  const controls = {
+    left: {
+      up: 'w',
+      down: 's',
+      left: 'a',
+      right: 'd',
+      fire: 'f'
+    },
+    right: {
+      up: 'ArrowUp',
+      down: 'ArrowDown',
+      left: 'ArrowLeft',
+      right: 'ArrowRight',
+      fire: 'p'
+    }
+  };
+
+  // Move tank within bounds
+  function moveTank(player, dx, dy) {
+    const tank = tanks[player];
+    tank.x += dx;
+    tank.y += dy;
+
+    // Keep tank inside game area bounds
+    tank.x = Math.min(Math.max(0, tank.x), gameWidth - tank.width);
+    tank.y = Math.min(Math.max(0, tank.y), gameHeight - tank.height);
+
+    updateTankPosition(player);
+  }
+
+  // Update tank position and turret rotation
+  function updateTankPosition(player) {
+    const tank = tanks[player];
+    tank.el.style.left = tank.x + 'px';
+    tank.el.style.top = tank.y + 'px';
+    tank.turretEl.style.transform = `translateX(-50%) rotate(${tank.turretAngle}deg)`;
+  }
+
+  // Fire bullet from tank turret
+  function fireBullet(player) {
+    const tank = tanks[player];
+    if (gameOver) return;
+
+    // Calculate bullet start position at turret tip
+    const angleRad = tank.turretAngle * Math.PI / 180;
+    const bulletX = tank.x + tank.width / 2 + Math.cos(angleRad) * 30;
+    const bulletY = tank.y + tank.height / 2 + Math.sin(angleRad) * 30;
+
+    const bullet = new Bullet(bulletX, bulletY, tank.turretAngle, player);
+    bullets.push(bullet);
+  }
+
+  // Handle keyboard events
+  window.addEventListener('keydown', e => {
+    if (gameOver) return;
+    keysPressed[e.key] = true;
+
+    // Prevent arrow keys scrolling the page
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
+      e.preventDefault();
+    }
+
+    // Fire bullets on keydown for F or P
+    if(e.key.toLowerCase() === controls.left.fire){
+      fireBullet('left');
+    }
+    if(e.key.toLowerCase() === controls.right.fire){
+      fireBullet('right');
+    }
+  });
+
+  window.addEventListener('keyup', e => {
+    delete keysPressed[e.key];
+  });
+
+  // Update function runs every frame
+  let gameOver = false;
+  function update() {
+    if(gameOver) return;
+
+    // Left player movement
+    if(keysPressed[controls.left.up]) moveTank('left', 0, -tankSpeed);
+    if(keysPressed[controls.left.down]) moveTank('left', 0, tankSpeed);
+    if(keysPressed[controls.left.left]) moveTank('left', -tankSpeed, 0);
+    if(keysPressed[controls.left.right]) moveTank('left', tankSpeed, 0);
+
+    // Right player movement
+    if(keysPressed[controls.right.up]) moveTank('right', 0, -tankSpeed);
+    if(keysPressed[controls.right.down]) moveTank('right', 0, tankSpeed);
+    if(keysPressed[controls.right.left]) moveTank('right', -tankSpeed, 0);
+    if(keysPressed[controls.right.right]) moveTank('right', tankSpeed, 0);
+
+    // Update turret angles to face opponent
+    updateTurretAngle('left');
+    updateTurretAngle('right');
+
+    // Update bullets and check collisions
+    bullets.forEach((bullet, i) => {
+      if(!bullet.active) return;
+      bullet.update();
+
+      // Check collision with opponent tank
+      const targetPlayer = bullet.owner === 'left' ? 'right' : 'left';
+      const tank = tanks[targetPlayer];
+      if(checkCollision(bullet.getRect(), {
+        left: tank.x,
+        top: tank.y,
+        right: tank.x + tank.width,
+        bottom: tank.y + tank.height
+      })) {
+        // Hit detected
+        bullet.destroy();
+        bullets.splice(i, 1);
+
+        applyDamage(targetPlayer, 10);
+      }
+    });
+
+    // Remove inactive bullets
+    bullets = bullets.filter(b => b.active);
+
+    requestAnimationFrame(update);
+  }
+
+  // Update turret to face opponent tank center
+  function updateTurretAngle(player) {
+    const tank = tanks[player];
+    const opponent = player === 'left' ? tanks.right : tanks.left;
+
+    const tankCenterX = tank.x + tank.width / 2;
+    const tankCenterY = tank.y + tank.height / 2;
+
+    const oppCenterX = opponent.x + opponent.width / 2;
+    const oppCenterY = opponent.y + opponent.height / 2;
+
+    const dx = oppCenterX - tankCenterX;
+    const dy = oppCenterY - tankCenterY;
+
+    let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+    tank.turretAngle = angle;
+    updateTankPosition(player);
+  }
+
+  // Check rectangular collision
+  function checkCollision(rect1, rect2) {
+    return !(rect1.right < rect2.left || 
+             rect1.left > rect2.right || 
+             rect1.bottom < rect2.top || 
+             rect1.top > rect2.bottom);
+  }
+
+  // Apply damage to player and update health bar
+  function applyDamage(player, damage) {
+    if(player === 'left') {
+      tanks.left.health -= damage;
+      if(tanks.left.health < 0) tanks.left.health = 0;
+      updateHealthBar('left');
+      if(tanks.left.health <= 0) endGame('Right Player Wins!');
+    } else {
+      tanks.right.health -= damage;
+      if(tanks.right.health < 0) tanks.right.health = 0;
+      updateHealthBar('right');
+      if(tanks.right.health <= 0) endGame('Left Player Wins!');
+    }
+  }
+
+  // Update health bar visuals
+  function updateHealthBar(player) {
+    if(player === 'left') {
+      leftHealthBar.style.width = tanks.left.health + '%';
+      leftHealthBar.style.background = healthColor(tanks.left.health);
+    } else {
+      rightHealthBar.style.width = tanks.right.health + '%';
+      rightHealthBar.style.background = healthColor(tanks.right.health);
+    }
+  }
+
+  // Health bar color from green to red
+  function healthColor(health) {
+    if(health > 60) return '#27ae60';
+    else if(health > 30) return '#f1c40f';
+    else return '#e74c3c';
+  }
+
+  // End game and show message
+  function endGame(text) {
+    gameOver = true;
+    message.textContent = text;
+  }
+
+  // Initial update
+  updateTankPosition('left');
+  updateTankPosition('right');
+  updateHealthBar('left');
+  updateHealthBar('right');
+
+  // Start game loop
+  update();
+</script>
+
 </body>
 </html>
