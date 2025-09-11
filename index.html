@@ -3,22 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PayNow - PhonePe Inspired UI</title>
+  <title>PayNow - Premium UI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #d6d9ff, #f2f5ff);
+      min-height: 100vh;
+    }
+
+    .glass {
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .fade-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .icon-box:hover {
       transform: scale(1.05);
       transition: all 0.2s ease-in-out;
     }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="text-gray-800 relative">
 
   <!-- Top Bar -->
-  <header class="bg-purple-700 text-white p-4 shadow-md">
+  <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 shadow-md fade-in">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
       <h1 class="text-xl font-semibold">PayNow</h1>
       <div class="text-sm">Welcome, User</div>
@@ -26,68 +50,70 @@
   </header>
 
   <!-- Balance Card -->
-  <section class="max-w-6xl mx-auto mt-4 px-4">
-    <div class="bg-white shadow rounded-xl p-4 flex justify-between items-center">
+  <section class="max-w-6xl mx-auto mt-6 px-4 fade-in">
+    <div class="glass rounded-xl p-6 flex justify-between items-center shadow-md">
       <div>
-        <p class="text-sm text-gray-500">Wallet Balance</p>
-        <h2 class="text-2xl font-bold text-green-600">₹5,420.00</h2>
+        <p class="text-sm text-gray-200">Wallet Balance</p>
+        <h2 class="text-3xl font-bold text-white mt-1">₹5,420.00</h2>
       </div>
-      <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">Check Balance</button>
+      <button class="bg-white/20 text-white border border-white px-4 py-2 rounded-lg hover:bg-white/30 transition">
+        Check Balance
+      </button>
     </div>
   </section>
 
   <!-- Quick Actions -->
-  <section class="max-w-6xl mx-auto mt-6 px-4">
-    <h3 class="text-lg font-semibold mb-3">Quick Actions</h3>
-    <div class="grid grid-cols-4 md:grid-cols-6 gap-4 text-center">
-      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
-        <img src="https://img.icons8.com/fluency/48/000000/money-transfer.png" class="mx-auto" />
+  <section class="max-w-6xl mx-auto mt-8 px-4 fade-in">
+    <h3 class="text-lg font-semibold mb-3 text-gray-700">Quick Actions</h3>
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-4 text-center">
+      <div class="icon-box glass text-white p-4 rounded-lg shadow-md cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/money-transfer.png" class="mx-auto" />
         <p class="text-sm mt-2">Send Money</p>
       </div>
-      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
-        <img src="https://img.icons8.com/fluency/48/000000/time-machine.png" class="mx-auto" />
+      <div class="icon-box glass text-white p-4 rounded-lg shadow-md cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/time-machine.png" class="mx-auto" />
         <p class="text-sm mt-2">History</p>
       </div>
-      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
-        <img src="https://img.icons8.com/fluency/48/000000/mobile-payment.png" class="mx-auto" />
+      <div class="icon-box glass text-white p-4 rounded-lg shadow-md cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/mobile-payment.png" class="mx-auto" />
         <p class="text-sm mt-2">Recharge</p>
       </div>
-      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
-        <img src="https://img.icons8.com/fluency/48/000000/loan.png" class="mx-auto" />
+      <div class="icon-box glass text-white p-4 rounded-lg shadow-md cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/loan.png" class="mx-auto" />
         <p class="text-sm mt-2">Loans</p>
       </div>
-      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
-        <img src="https://img.icons8.com/fluency/48/000000/movie-ticket.png" class="mx-auto" />
+      <div class="icon-box glass text-white p-4 rounded-lg shadow-md cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/movie-ticket.png" class="mx-auto" />
         <p class="text-sm mt-2">Movies</p>
       </div>
-      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
-        <img src="https://img.icons8.com/fluency/48/000000/wallet.png" class="mx-auto" />
+      <div class="icon-box glass text-white p-4 rounded-lg shadow-md cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/wallet.png" class="mx-auto" />
         <p class="text-sm mt-2">Add Money</p>
       </div>
     </div>
   </section>
 
   <!-- Offers / Promotions -->
-  <section class="max-w-6xl mx-auto mt-8 px-4">
-    <h3 class="text-lg font-semibold mb-3">Offers For You</h3>
+  <section class="max-w-6xl mx-auto mt-10 px-4 fade-in">
+    <h3 class="text-lg font-semibold mb-3 text-gray-700">Offers For You</h3>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-purple-100 text-purple-800 p-4 rounded-lg shadow-md">
-        <h4 class="font-bold">Get ₹100 Cashback</h4>
-        <p class="text-sm mt-1">On your first transaction using UPI.</p>
+      <div class="glass p-5 rounded-xl text-white shadow-md">
+        <h4 class="text-lg font-bold">🎁 ₹100 Cashback</h4>
+        <p class="text-sm mt-1">On first UPI transaction</p>
       </div>
-      <div class="bg-green-100 text-green-800 p-4 rounded-lg shadow-md">
-        <h4 class="font-bold">Loan Pre-approved</h4>
-        <p class="text-sm mt-1">Get up to ₹50,000 with zero paperwork.</p>
+      <div class="glass p-5 rounded-xl text-white shadow-md">
+        <h4 class="text-lg font-bold">📋 Pre-approved Loan</h4>
+        <p class="text-sm mt-1">₹50,000. No paperwork!</p>
       </div>
-      <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg shadow-md">
-        <h4 class="font-bold">Book Movie & Save 50%</h4>
-        <p class="text-sm mt-1">Only valid this weekend!</p>
+      <div class="glass p-5 rounded-xl text-white shadow-md">
+        <h4 class="text-lg font-bold">🎬 Save 50% on Movies</h4>
+        <p class="text-sm mt-1">This weekend only</p>
       </div>
     </div>
   </section>
 
   <!-- Footer Navigation -->
-  <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-inner border-t border-gray-200">
+  <footer class="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-md border-t border-gray-200 shadow-inner">
     <div class="flex justify-around text-sm text-gray-700 py-2">
       <div class="flex flex-col items-center">
         <span>🏠</span>
