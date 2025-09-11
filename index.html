@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>2 Player Vertical Obstacle Race</title>
+  <meta charset="UTF-8" />
+  <title>2 Player Race with Health Bars</title>
   <style>
-    body {
+    * { box-sizing: border-box; }
+    html, body {
       margin: 0;
+      padding: 0;
       overflow: hidden;
       background: #111;
     }
 
     canvas {
       display: block;
-      background: linear-gradient(to top, #111, #333);
+      background: linear-gradient(to top, #111, #222);
     }
 
     #winMessage {
@@ -20,213 +22,208 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: white;
       font-size: 2rem;
-      z-index: 10;
+      color: white;
+      background: rgba(0,0,0,0.6);
+      padding: 1rem 2rem;
+      border-radius: 10px;
       display: none;
-      text-align: center;
+      z-index: 999;
     }
   </style>
 </head>
 <body>
   <div id="winMessage"></div>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <canvas id="gameCanvas" width="900" height="600"></canvas>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    const finishLine = 50;
-    const gravity = 0.8;
-    const moveSpeed = 4;
-    const jumpPower = -12;
-    const obstacleSpeed = 5;
-    const playerSize = 40;
+    const FINISH_LINE = 40;
+    const PLAYER_RADIUS = 25;
+    const OBSTACLE_WIDTH = 30;
+    const OBSTACLE_HEIGHT = 30;
+    const OBSTACLE_SPEED = 6;
+    const MAX_HEALTH = 100;
+    const DAMAGE = 25;
 
-    const players = {
-      left: {
-        x: canvas.width / 4,
-        y: canvas.height - 60,
-        vy: 0,
-        width: playerSize,
-        height: playerSize,
-        color: 'cyan',
-        crouching: false,
-        keys: {
-          left: 'a', right: 'd',
-          up: 'w', jump: 'q', crouch: 'e'
-        }
-      },
-      right: {
-        x: (canvas.width * 3) / 4,
-        y: canvas.height - 60,
-        vy: 0,
-        width: playerSize,
-        height: playerSize,
-        color: 'orange',
-        crouching: false,
-        keys: {
-          left: 'ArrowLeft', right: 'ArrowRight',
-          up: 'ArrowUp', jump: 'Shift', crouch: 'Control'
-        }
-      }
-    };
-
-    const keysPressed = {};
-    const obstacles = [];
+    const keys = {};
 
     document.addEventListener('keydown', (e) => {
-      keysPressed[e.key] = true;
+      keys[e.key] = true;
     });
 
     document.addEventListener('keyup', (e) => {
-      keysPressed[e.key] = false;
+      keys[e.key] = false;
     });
 
+    const players = {
+      left: {
+        x: canvas.width / 3,
+        y: canvas.height - 60,
+        color: 'cyan',
+        keys: { left: 'a', right: 'd', up: 'w' },
+        health: MAX_HEALTH,
+        width: PLAYER_RADIUS * 2,
+        height: PLAYER_RADIUS * 2,
+        hitCooldown: 0
+      },
+      right: {
+        x: (canvas.width * 2) / 3,
+        y: canvas.height - 60,
+        color: 'orange',
+        keys: { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp' },
+        health: MAX_HEALTH,
+        width: PLAYER_RADIUS * 2,
+        height: PLAYER_RADIUS * 2,
+        hitCooldown: 0
+      }
+    };
+
+    const obstacles = [];
+
+    function spawnObstacle() {
+      const isLeft = Math.random() > 0.5;
+      const sideX = isLeft ? canvas.width / 3 : (canvas.width * 2) / 3;
+      const offset = (Math.random() - 0.5) * 100;
+
+      obstacles.push({
+        x: sideX + offset,
+        y: -30,
+        width: OBSTACLE_WIDTH,
+        height: OBSTACLE_HEIGHT,
+        color: 'red',
+        side: isLeft ? 'left' : 'right'
+      });
+    }
+
     function drawPlayer(player) {
-      ctx.beginPath();
       ctx.fillStyle = player.color;
-      ctx.arc(player.x, player.y, player.width / 2, 0, Math.PI * 2);
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, PLAYER_RADIUS, 0, Math.PI * 2);
       ctx.fill();
 
       // Eyes
-      ctx.fillStyle = 'black';
+      ctx.fillStyle = '#000';
       ctx.beginPath();
       ctx.arc(player.x - 8, player.y - 5, 3, 0, Math.PI * 2);
       ctx.arc(player.x + 8, player.y - 5, 3, 0, Math.PI * 2);
       ctx.fill();
+
+      // Health bar
+      const barWidth = 60;
+      const barHeight = 8;
+      const barX = player.x - barWidth / 2;
+      const barY = player.y - PLAYER_RADIUS - 20;
+
+      ctx.fillStyle = 'gray';
+      ctx.fillRect(barX, barY, barWidth, barHeight);
+      ctx.fillStyle = 'limegreen';
+      ctx.fillRect(barX, barY, (player.health / MAX_HEALTH) * barWidth, barHeight);
+      ctx.strokeStyle = 'white';
+      ctx.strokeRect(barX, barY, barWidth, barHeight);
     }
 
-    function updatePlayer(player) {
-      if (keysPressed[player.keys.left] && player.x - player.width / 2 > 0) {
-        player.x -= moveSpeed;
+    function updatePlayer(player, keyMap) {
+      if (keys[keyMap.left] && player.x > PLAYER_RADIUS + 10) {
+        player.x -= 4;
       }
-      if (keysPressed[player.keys.right] && player.x + player.width / 2 < canvas.width) {
-        player.x += moveSpeed;
+      if (keys[keyMap.right] && player.x < canvas.width - PLAYER_RADIUS - 10) {
+        player.x += 4;
       }
-
-      // Move up to finish line
-      if (keysPressed[player.keys.up]) {
-        player.y -= moveSpeed;
-      }
-
-      // Jump (adds Y velocity)
-      if (keysPressed[player.keys.jump] && player.vy === 0) {
-        player.vy = jumpPower;
-      }
-
-      // Crouch (reduce size)
-      if (keysPressed[player.keys.crouch]) {
-        player.crouching = true;
-        player.height = playerSize / 2;
-      } else {
-        player.crouching = false;
-        player.height = playerSize;
-      }
-
-      // Apply gravity
-      player.vy += gravity;
-      player.y += player.vy;
-
-      // Stay on ground
-      if (player.y > canvas.height - 60) {
-        player.y = canvas.height - 60;
-        player.vy = 0;
-      }
-
-      // Clamp to top
-      if (player.y < 10) {
-        player.y = 10;
+      if (keys[keyMap.up] && player.y > 10) {
+        player.y -= 3;
       }
     }
 
-    function spawnObstacle() {
-      const side = Math.random() > 0.5 ? 'left' : 'right';
-      const x = side === 'left' ? canvas.width / 4 : (canvas.width * 3) / 4;
-      const offset = (Math.random() - 0.5) * 100;
-
-      obstacles.push({
-        x: x + offset,
-        y: -30,
-        width: 30,
-        height: 30,
-        color: 'red',
-        side: side
-      });
+    function drawObstacle(ob) {
+      ctx.fillStyle = ob.color;
+      ctx.fillRect(ob.x - ob.width / 2, ob.y, ob.width, ob.height);
     }
 
-    function drawObstacle(obs) {
-      ctx.fillStyle = obs.color;
-      ctx.fillRect(obs.x - obs.width / 2, obs.y, obs.width, obs.height);
-    }
+    function checkCollision(player, ob) {
+      const px = player.x;
+      const py = player.y;
+      const pw = PLAYER_RADIUS;
+      const ph = PLAYER_RADIUS;
 
-    function checkCollision(player, obs) {
       return (
-        player.x + player.width / 2 > obs.x - obs.width / 2 &&
-        player.x - player.width / 2 < obs.x + obs.width / 2 &&
-        player.y + player.height / 2 > obs.y &&
-        player.y - player.height / 2 < obs.y + obs.height
+        px + pw > ob.x - ob.width / 2 &&
+        px - pw < ob.x + ob.width / 2 &&
+        py + ph > ob.y &&
+        py - ph < ob.y + ob.height
       );
-    }
-
-    function showWinner(winner) {
-      const msg = document.getElementById("winMessage");
-      msg.textContent = `${winner} Player Wins!`;
-      msg.style.display = 'block';
-      cancelAnimationFrame(gameLoopId);
     }
 
     function drawFinishLine() {
       ctx.fillStyle = 'white';
-      ctx.fillRect(0, finishLine, canvas.width, 4);
+      ctx.fillRect(0, FINISH_LINE, canvas.width, 4);
     }
 
-    let frameCount = 0;
-    let gameLoopId;
+    function showWinner(text) {
+      const msg = document.getElementById('winMessage');
+      msg.textContent = text;
+      msg.style.display = 'block';
+      cancelAnimationFrame(animationId);
+    }
+
+    let frame = 0;
+    let animationId;
 
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawFinishLine();
 
-      updatePlayer(players.left);
-      updatePlayer(players.right);
+      // Update players
+      updatePlayer(players.left, players.left.keys);
+      updatePlayer(players.right, players.right.keys);
 
       drawPlayer(players.left);
       drawPlayer(players.right);
 
-      if (frameCount % 50 === 0) {
+      // Spawn obstacles
+      if (frame % 50 === 0) {
         spawnObstacle();
       }
 
+      // Update obstacles
       for (let i = obstacles.length - 1; i >= 0; i--) {
-        const obs = obstacles[i];
-        obs.y += obstacleSpeed;
-        drawObstacle(obs);
+        const ob = obstacles[i];
+        ob.y += OBSTACLE_SPEED;
+        drawObstacle(ob);
 
-        if (obs.y > canvas.height + 30) {
+        if (ob.y > canvas.height) {
           obstacles.splice(i, 1);
+          continue;
         }
 
-        if (obs.side === 'left' && checkCollision(players.left, obs)) {
-          // Knockback
-          players.left.y += 30;
-        }
+        // Collisions
+        const p = ob.side === 'left' ? players.left : players.right;
 
-        if (obs.side === 'right' && checkCollision(players.right, obs)) {
-          // Knockback
-          players.right.y += 30;
+        if (checkCollision(p, ob)) {
+          if (p.hitCooldown === 0) {
+            p.health -= DAMAGE;
+            p.hitCooldown = 30; // cooldown frames
+          }
         }
       }
 
-      // Win check
-      if (players.left.y <= finishLine) {
-        showWinner("Left");
-      } else if (players.right.y <= finishLine) {
-        showWinner("Right");
-      } else {
-        frameCount++;
-        gameLoopId = requestAnimationFrame(gameLoop);
+      // Handle cooldowns
+      for (const key in players) {
+        if (players[key].hitCooldown > 0) {
+          players[key].hitCooldown--;
+        }
       }
+
+      // Win conditions
+      if (players.left.health <= 0) return showWinner("Right Player Wins (Left died)");
+      if (players.right.health <= 0) return showWinner("Left Player Wins (Right died)");
+      if (players.left.y <= FINISH_LINE) return showWinner("Left Player Wins!");
+      if (players.right.y <= FINISH_LINE) return showWinner("Right Player Wins!");
+
+      frame++;
+      animationId = requestAnimationFrame(gameLoop);
     }
 
     gameLoop();
