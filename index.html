@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>2 Player Race - Hard Mode</title>
+  <title>2 Player Race - Hard Mode with Effects</title>
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -44,9 +44,9 @@
     const PLAYER_RADIUS = 25;
     const OBSTACLE_WIDTH = 30;
     const OBSTACLE_HEIGHT = 30;
-    const OBSTACLE_SPEED = 7; // Increased speed
+    const OBSTACLE_SPEED = 7;
     const MAX_HEALTH = 100;
-    const DAMAGE = 25;
+    const DAMAGE = 50; // now 2 hits = KO
 
     const keys = {};
     document.addEventListener('keydown', (e) => keys[e.key] = true);
@@ -60,7 +60,7 @@
         keys: { left: 'a', right: 'd', up: 'w' },
         health: MAX_HEALTH,
         hitCooldown: 0,
-        flash: 0
+        flickerFrames: 0
       },
       right: {
         x: (canvas.width * 2) / 3,
@@ -69,7 +69,7 @@
         keys: { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp' },
         health: MAX_HEALTH,
         hitCooldown: 0,
-        flash: 0
+        flickerFrames: 0
       }
     };
 
@@ -87,12 +87,17 @@
         height: OBSTACLE_HEIGHT,
         color: 'red',
         side: isLeft ? 'left' : 'right',
-        dx: (Math.random() - 0.5) * 1.5 // slight horizontal drift
+        dx: (Math.random() - 0.5) * 1.5
       });
     }
 
     function drawPlayer(player) {
-      ctx.fillStyle = player.flash > 0 ? 'white' : player.color;
+      if (player.flickerFrames % 10 < 5 && player.flickerFrames > 0) {
+        ctx.fillStyle = 'white'; // Flicker effect
+      } else {
+        ctx.fillStyle = player.color;
+      }
+
       ctx.beginPath();
       ctx.arc(player.x, player.y, PLAYER_RADIUS, 0, Math.PI * 2);
       ctx.fill();
@@ -121,9 +126,11 @@
     function updatePlayer(player, keyMap) {
       if (keys[keyMap.left] && player.x > PLAYER_RADIUS + 10) player.x -= 4;
       if (keys[keyMap.right] && player.x < canvas.width - PLAYER_RADIUS - 10) player.x += 4;
-      if (keys[keyMap.up] && player.y > 10) player.y -= 3;
+      if (keys[keyMap.up] && player.y > 10) player.y -= 2; // slower upward movement
 
-      if (player.flash > 0) player.flash--;
+      if (player.flickerFrames > 0) {
+        player.flickerFrames--;
+      }
     }
 
     function drawObstacle(ob) {
@@ -165,12 +172,10 @@
       drawPlayer(players.left);
       drawPlayer(players.right);
 
-      // Increase spawn rate
       if (frame % 30 === 0) {
         spawnObstacle();
       }
 
-      // Update and draw obstacles
       for (let i = obstacles.length - 1; i >= 0; i--) {
         const ob = obstacles[i];
         ob.y += OBSTACLE_SPEED;
@@ -187,20 +192,18 @@
         if (checkCollision(player, ob)) {
           if (player.hitCooldown === 0) {
             player.health -= DAMAGE;
-            player.hitCooldown = 20;
-            player.flash = 5;
+            player.hitCooldown = 30;
+            player.flickerFrames = 30;
           }
         }
       }
 
-      // Handle cooldown
       for (const key in players) {
         if (players[key].hitCooldown > 0) {
           players[key].hitCooldown--;
         }
       }
 
-      // Win conditions
       if (players.left.health <= 0) return showWinner("💀 Left Player Lost — Right Wins!");
       if (players.right.health <= 0) return showWinner("💀 Right Player Lost — Left Wins!");
       if (players.left.y <= FINISH_LINE) return showWinner("🏁 Left Player Wins!");
