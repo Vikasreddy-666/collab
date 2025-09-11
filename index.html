@@ -2,218 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>2 Player Race - Hard Mode with Effects</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PayNow - PhonePe Inspired UI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #111;
-    }
-
-    canvas {
-      display: block;
-      background: linear-gradient(to top, #111, #222);
-    }
-
-    #winMessage {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 2rem;
-      color: white;
-      background: rgba(0,0,0,0.6);
-      padding: 1rem 2rem;
-      border-radius: 10px;
-      display: none;
-      z-index: 999;
+    body { font-family: 'Inter', sans-serif; }
+    .icon-box:hover {
+      transform: scale(1.05);
+      transition: all 0.2s ease-in-out;
     }
   </style>
 </head>
-<body>
-  <div id="winMessage"></div>
-  <canvas id="gameCanvas" width="900" height="600"></canvas>
+<body class="bg-gray-50 text-gray-800">
 
-  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+  <!-- Top Bar -->
+  <header class="bg-purple-700 text-white p-4 shadow-md">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-semibold">PayNow</h1>
+      <div class="text-sm">Welcome, User</div>
+    </div>
+  </header>
 
-    const FINISH_LINE = 40;
-    const PLAYER_RADIUS = 25;
-    const OBSTACLE_WIDTH = 30;
-    const OBSTACLE_HEIGHT = 30;
-    const OBSTACLE_SPEED = 7;
-    const MAX_HEALTH = 100;
-    const DAMAGE = 50; // now 2 hits = KO
+  <!-- Balance Card -->
+  <section class="max-w-6xl mx-auto mt-4 px-4">
+    <div class="bg-white shadow rounded-xl p-4 flex justify-between items-center">
+      <div>
+        <p class="text-sm text-gray-500">Wallet Balance</p>
+        <h2 class="text-2xl font-bold text-green-600">₹5,420.00</h2>
+      </div>
+      <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">Check Balance</button>
+    </div>
+  </section>
 
-    const keys = {};
-    document.addEventListener('keydown', (e) => keys[e.key] = true);
-    document.addEventListener('keyup', (e) => keys[e.key] = false);
+  <!-- Quick Actions -->
+  <section class="max-w-6xl mx-auto mt-6 px-4">
+    <h3 class="text-lg font-semibold mb-3">Quick Actions</h3>
+    <div class="grid grid-cols-4 md:grid-cols-6 gap-4 text-center">
+      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/000000/money-transfer.png" class="mx-auto" />
+        <p class="text-sm mt-2">Send Money</p>
+      </div>
+      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/000000/time-machine.png" class="mx-auto" />
+        <p class="text-sm mt-2">History</p>
+      </div>
+      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/000000/mobile-payment.png" class="mx-auto" />
+        <p class="text-sm mt-2">Recharge</p>
+      </div>
+      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/000000/loan.png" class="mx-auto" />
+        <p class="text-sm mt-2">Loans</p>
+      </div>
+      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/000000/movie-ticket.png" class="mx-auto" />
+        <p class="text-sm mt-2">Movies</p>
+      </div>
+      <div class="icon-box bg-white p-4 rounded-lg shadow cursor-pointer">
+        <img src="https://img.icons8.com/fluency/48/000000/wallet.png" class="mx-auto" />
+        <p class="text-sm mt-2">Add Money</p>
+      </div>
+    </div>
+  </section>
 
-    const players = {
-      left: {
-        x: canvas.width / 3,
-        y: canvas.height - 60,
-        color: 'cyan',
-        keys: { left: 'a', right: 'd', up: 'w' },
-        health: MAX_HEALTH,
-        hitCooldown: 0,
-        flickerFrames: 0
-      },
-      right: {
-        x: (canvas.width * 2) / 3,
-        y: canvas.height - 60,
-        color: 'orange',
-        keys: { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp' },
-        health: MAX_HEALTH,
-        hitCooldown: 0,
-        flickerFrames: 0
-      }
-    };
+  <!-- Offers / Promotions -->
+  <section class="max-w-6xl mx-auto mt-8 px-4">
+    <h3 class="text-lg font-semibold mb-3">Offers For You</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-purple-100 text-purple-800 p-4 rounded-lg shadow-md">
+        <h4 class="font-bold">Get ₹100 Cashback</h4>
+        <p class="text-sm mt-1">On your first transaction using UPI.</p>
+      </div>
+      <div class="bg-green-100 text-green-800 p-4 rounded-lg shadow-md">
+        <h4 class="font-bold">Loan Pre-approved</h4>
+        <p class="text-sm mt-1">Get up to ₹50,000 with zero paperwork.</p>
+      </div>
+      <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg shadow-md">
+        <h4 class="font-bold">Book Movie & Save 50%</h4>
+        <p class="text-sm mt-1">Only valid this weekend!</p>
+      </div>
+    </div>
+  </section>
 
-    const obstacles = [];
+  <!-- Footer Navigation -->
+  <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-inner border-t border-gray-200">
+    <div class="flex justify-around text-sm text-gray-700 py-2">
+      <div class="flex flex-col items-center">
+        <span>🏠</span>
+        <span>Home</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <span>💳</span>
+        <span>Cards</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <span>📊</span>
+        <span>History</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <span>⚙️</span>
+        <span>Settings</span>
+      </div>
+    </div>
+  </footer>
 
-    function spawnObstacle() {
-      const isLeft = Math.random() > 0.5;
-      const sideX = isLeft ? canvas.width / 3 : (canvas.width * 2) / 3;
-      const offset = (Math.random() - 0.5) * 120;
-
-      obstacles.push({
-        x: sideX + offset,
-        y: -30,
-        width: OBSTACLE_WIDTH,
-        height: OBSTACLE_HEIGHT,
-        color: 'red',
-        side: isLeft ? 'left' : 'right',
-        dx: (Math.random() - 0.5) * 1.5
-      });
-    }
-
-    function drawPlayer(player) {
-      if (player.flickerFrames % 10 < 5 && player.flickerFrames > 0) {
-        ctx.fillStyle = 'white'; // Flicker effect
-      } else {
-        ctx.fillStyle = player.color;
-      }
-
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, PLAYER_RADIUS, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Eyes
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(player.x - 8, player.y - 5, 3, 0, Math.PI * 2);
-      ctx.arc(player.x + 8, player.y - 5, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Health bar
-      const barWidth = 60;
-      const barHeight = 8;
-      const barX = player.x - barWidth / 2;
-      const barY = player.y - PLAYER_RADIUS - 20;
-
-      ctx.fillStyle = 'gray';
-      ctx.fillRect(barX, barY, barWidth, barHeight);
-      ctx.fillStyle = 'limegreen';
-      ctx.fillRect(barX, barY, (player.health / MAX_HEALTH) * barWidth, barHeight);
-      ctx.strokeStyle = 'white';
-      ctx.strokeRect(barX, barY, barWidth, barHeight);
-    }
-
-    function updatePlayer(player, keyMap) {
-      if (keys[keyMap.left] && player.x > PLAYER_RADIUS + 10) player.x -= 4;
-      if (keys[keyMap.right] && player.x < canvas.width - PLAYER_RADIUS - 10) player.x += 4;
-      if (keys[keyMap.up] && player.y > 10) player.y -= 2; // slower upward movement
-
-      if (player.flickerFrames > 0) {
-        player.flickerFrames--;
-      }
-    }
-
-    function drawObstacle(ob) {
-      ctx.fillStyle = ob.color;
-      ctx.fillRect(ob.x - ob.width / 2, ob.y, ob.width, ob.height);
-    }
-
-    function checkCollision(player, ob) {
-      return (
-        player.x + PLAYER_RADIUS > ob.x - ob.width / 2 &&
-        player.x - PLAYER_RADIUS < ob.x + ob.width / 2 &&
-        player.y + PLAYER_RADIUS > ob.y &&
-        player.y - PLAYER_RADIUS < ob.y + ob.height
-      );
-    }
-
-    function drawFinishLine() {
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, FINISH_LINE, canvas.width, 4);
-    }
-
-    function showWinner(text) {
-      const msg = document.getElementById('winMessage');
-      msg.textContent = text;
-      msg.style.display = 'block';
-      cancelAnimationFrame(animationId);
-    }
-
-    let frame = 0;
-    let animationId;
-
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawFinishLine();
-
-      updatePlayer(players.left, players.left.keys);
-      updatePlayer(players.right, players.right.keys);
-
-      drawPlayer(players.left);
-      drawPlayer(players.right);
-
-      if (frame % 30 === 0) {
-        spawnObstacle();
-      }
-
-      for (let i = obstacles.length - 1; i >= 0; i--) {
-        const ob = obstacles[i];
-        ob.y += OBSTACLE_SPEED;
-        ob.x += ob.dx;
-        drawObstacle(ob);
-
-        if (ob.y > canvas.height + 30) {
-          obstacles.splice(i, 1);
-          continue;
-        }
-
-        const player = ob.side === 'left' ? players.left : players.right;
-
-        if (checkCollision(player, ob)) {
-          if (player.hitCooldown === 0) {
-            player.health -= DAMAGE;
-            player.hitCooldown = 30;
-            player.flickerFrames = 30;
-          }
-        }
-      }
-
-      for (const key in players) {
-        if (players[key].hitCooldown > 0) {
-          players[key].hitCooldown--;
-        }
-      }
-
-      if (players.left.health <= 0) return showWinner("💀 Left Player Lost — Right Wins!");
-      if (players.right.health <= 0) return showWinner("💀 Right Player Lost — Left Wins!");
-      if (players.left.y <= FINISH_LINE) return showWinner("🏁 Left Player Wins!");
-      if (players.right.y <= FINISH_LINE) return showWinner("🏁 Right Player Wins!");
-
-      frame++;
-      animationId = requestAnimationFrame(gameLoop);
-    }
-
-    gameLoop();
-  </script>
 </body>
 </html>
